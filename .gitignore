@@ -3,3 +3,4 @@
 /build
 erl_crash.dump
 priv/static/randomized_practice.mjs
+index.html
