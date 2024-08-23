@@ -33,7 +33,7 @@ jobs:
           cp index.html dist/index.html
           cp -r priv dist/priv
       - name: Update path in index.html to use minified app
-        run: sed -i 's/randomized_practice.mjs/randomized_practice.min.mjs' dist/index.html
+        run: sed -i 's/randomized_practice.mjs/randomized_practice.min.mjs/g' dist/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
