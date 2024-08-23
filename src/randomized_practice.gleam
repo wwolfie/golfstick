@@ -8,7 +8,31 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import lustre/event
+import lustre/ui.{type Theme, Px, Rem, Size, Theme}
+import lustre/ui/button
+import lustre/ui/layout/aside
+import lustre/ui/layout/stack
+import lustre/ui/util/colour
+import lustre/ui/util/styles
 import prng/random
+
+fn main_style() -> List(#(String, String)) {
+  [#("width", "80ch"), #("margin", "0 auto"), #("padding", "2rem")]
+}
+
+fn main_theme() -> Theme {
+  Theme(
+    space: Size(base: Rem(1.5), ratio: 1.618),
+    text: Size(base: Rem(1.125), ratio: 1.215),
+    radius: Px(4.0),
+    primary: colour.red(),
+    greyscale: colour.slate(),
+    error: colour.red(),
+    success: colour.green(),
+    warning: colour.yellow(),
+    info: colour.blue(),
+  )
+}
 
 pub type Cue {
   Cue(name: String, values: List(String))
@@ -115,47 +139,75 @@ pub fn update(model: Model, msg: Msg) -> Model {
 }
 
 pub fn welcome_view(_model: Model) -> element.Element(Msg) {
-  html.div([], [
-    html.text(
-      "Welcome, this the golf range randomized shot selector, to help you train better",
-    ),
-    html.br([]),
-    html.button([event.on_click(UserGoesToInput)], [html.text("Go to input")]),
+  html.div([attribute.style(main_style())], [
+    styles.elements(),
+    styles.theme(main_theme()),
+    stack.stack([], [
+      header("Welcome"),
+      html.text(
+        "This the golf range randomized shot selector, to help you train better",
+      ),
+      button.button(
+        [event.on_click(UserGoesToInput), button.primary(), button.solid()],
+        [html.text("Go to input")],
+      ),
+    ]),
   ])
 }
 
+fn header(text: String) -> element.Element(Msg) {
+  html.h1(
+    [attribute.style([#("font-size", "25px"), #("text-align", "center")])],
+    [element.text(text)],
+  )
+}
+
 pub fn input_view(model: Model) -> element.Element(Msg) {
-  html.div([], [
-    html.form([event.on_submit(UserClickButton)], [
-      html.text("First club: "),
-      html.input([
-        attribute.type_("text"),
-        attribute.value(model.club_form.first),
-        event.on_input(UserChangeFirstClubName),
-      ]),
-      html.br([]),
-      html.text("Second club: "),
-      html.input([
-        attribute.type_("text"),
-        attribute.value(model.club_form.second),
-        event.on_input(UserChangeSecondClubName),
-      ]),
-      html.br([]),
-      html.text("Third club: "),
-      html.input([
-        attribute.type_("text"),
-        attribute.value(model.club_form.third),
-        event.on_input(UserChangeThirdClubName),
-      ]),
-      html.br([]),
-      html.text("Number of balls to play: "),
-      html.input([
-        attribute.type_("value"),
-        attribute.value(model.number_of_shots_form),
-        event.on_input(UserChangeNumberOfShots),
-      ]),
-      html.br([]),
-      html.input([attribute.type_("submit"), attribute.value("start playing")]),
+  html.div([attribute.style(main_style())], [
+    styles.elements(),
+    styles.theme(main_theme()),
+    stack.stack([], [
+      header("Set up your session"),
+      aside.aside(
+        [aside.content_first()],
+        html.text("First club: "),
+        html.input([
+          attribute.type_("text"),
+          attribute.value(model.club_form.first),
+          event.on_input(UserChangeFirstClubName),
+        ]),
+      ),
+      aside.aside(
+        [],
+        html.text("Second club: "),
+        html.input([
+          attribute.type_("text"),
+          attribute.value(model.club_form.second),
+          event.on_input(UserChangeSecondClubName),
+        ]),
+      ),
+      aside.aside(
+        [],
+        html.text("Third club: "),
+        html.input([
+          attribute.type_("text"),
+          attribute.value(model.club_form.third),
+          event.on_input(UserChangeThirdClubName),
+        ]),
+      ),
+      aside.aside(
+        [],
+        html.text("Number of balls to play: "),
+        html.input([
+          attribute.type_("value"),
+          attribute.value(model.number_of_shots_form),
+          event.on_input(UserChangeNumberOfShots),
+        ]),
+      ),
+      button.button(
+        [event.on_click(UserClickButton), button.primary(), button.solid()],
+        [html.text("start playing")],
+      ),
     ]),
   ])
 }
@@ -181,27 +233,48 @@ pub fn make_cues_text() -> List(element.Element(Msg)) {
   shot_cues
   |> list.map(fn(cue: Cue) {
     let value = select_random_cue(cue)
-    html.text(cue.name <> ": " <> value)
+    paragraph([], cue.name <> ": " <> value)
   })
   |> list.intersperse(html.br([]))
 }
 
+fn paragraph(
+  attributes: List(attribute.Attribute(a)),
+  text: String,
+) -> element.Element(a) {
+  html.p(attributes, [element.text(text)])
+}
+
 pub fn output_view(model: Model) -> element.Element(Msg) {
-  html.div([], [
-    html.text(
+  let shot_text = [
+    paragraph(
+      [],
       "There are "
-      <> int.to_string(model.number_of_shots_to_go)
-      <> " out of "
-      <> model.number_of_shots_form
-      <> " shots to go",
+        <> int.to_string(model.number_of_shots_to_go)
+        <> " out of "
+        <> model.number_of_shots_form
+        <> " shots to go",
     ),
-    html.br([]),
-    html.text("Hit your: " <> select_random_club(model)),
-    html.div([], make_cues_text()),
-    html.br([]),
-    html.button([event.on_click(UserGoesToNextShot)], [
-      html.text("Return to input"),
-    ]),
+    paragraph([], "Hit your: " <> select_random_club(model)),
+  ]
+  let next_shot_button =
+    button.button(
+      [event.on_click(UserGoesToNextShot), button.primary(), button.solid()],
+      [html.text("Next shot")],
+    )
+
+  html.div([attribute.style(main_style())], [
+    styles.elements(),
+    styles.theme(main_theme()),
+    stack.stack(
+      [stack.tight()],
+      list.concat([
+        [header("Hitting your shot")],
+        shot_text,
+        make_cues_text(),
+        [next_shot_button],
+      ]),
+    ),
   ])
 }
 
