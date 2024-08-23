@@ -51,4 +51,4 @@ gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
 lustre = { version = ">= 4.3.2 and < 5.0.0" }
 lustre_dev_tools = { version = ">= 1.5.2 and < 2.0.0" }
 lustre_http = { version = ">= 0.5.2 and < 1.0.0" }
-prng = { version = ">= 3.0.3 and < 4.0.0"}
+prng = { version = ">= 3.0.3 and < 4.0.0" }
